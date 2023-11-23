@@ -2,6 +2,26 @@
 
 Este documento proporciona información detallada sobre el sistema de gestión para la Farmacia Campus. El sistema se desarrolla utilizando MongoDB como base de datos, y NodeJS junto con ExpressJS para el backend. Además, se utiliza el patrón de arquitectura Modelo Vista-Controlador (MVC) para una organización estructurada del código. Para probar y probar los endpoints, se recomienda el uso de Postman.
 
+## Instalación y Ejecución
+
+1. Clonar el repositorio:
+
+```bash
+https://github.com/sepulveda272/Filtro_diacnostico_nodejs.git
+```
+2. Instalar dependencias:
+
+```bash
+cd Filtro_diacnostico_nodejs
+npm install
+```
+3. Iniciar la aplicación:
+
+```bash
+npm run dev
+```
+4. Acceder a los endpoints utilizando Postman o cualquier otra herramienta de prueba de API.
+
 ## Endpoints
 
 
@@ -346,24 +366,3 @@ http://localhost:8000/get/endpoint38
 ```
 
 Método: GET
-
-
-## Instalación y Ejecución
-
-1. Clonar el repositorio:
-
-```bash
-https://github.com/sepulveda272/Filtro_diacnostico_nodejs.git
-```
-2. Instalar dependencias:
-
-```bash
-cd Filtro_diacnostico_nodejs
-npm install
-```
-3. Iniciar la aplicación:
-
-```bash
-npm run dev
-```
-4. Acceder a los endpoints utilizando Postman o cualquier otra herramienta de prueba de API.
