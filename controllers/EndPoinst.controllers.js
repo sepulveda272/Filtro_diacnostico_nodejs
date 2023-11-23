@@ -444,8 +444,20 @@ export const endpoint20 = async (req, res) => {
 
 export const endpoint21 = async (req, res) => {
     try {
-        //const endpoint = (await conection()).Compras
-    
+        const endpointMedicamentos = (await conection()).Medicamentos
+        const endpointVentas = (await conection()).Ventas
+        const medicaamentosVendidoss = await endpointVentas.distinct(
+          "medicamentosVendidos.nombreMedicamento"
+        );
+        const medicaamentosNoVendidoss = await endpointMedicamentos
+          .find({
+            nombre: { $nin: medicaamentosVendidoss },
+          })
+          .toArray();
+
+        res.json({
+          medicaamentosNoVendidoss,
+        });
     } catch (error) {
         throw "eso no sirve";
     }
@@ -453,8 +465,35 @@ export const endpoint21 = async (req, res) => {
 
 export const endpoint22 = async (req, res) => {
     try {
-        //const endpoint = (await conection()).Compras
-    
+        const endpoint = (await conection()).Ventas
+        const result = await endpoint.aggregate([
+            {
+              $match: {
+                fechaVenta: {
+                  $gte: new Date("2023-01-01T00:00:00.000Z"),
+                  $lte: new Date("2023-12-31T23:59:59.999Z"),
+                }
+              }
+            },
+            {
+              $group: {
+                _id: "$paciente",
+                Total_que_gasto: { $sum: { $sum: "$medicamentosVendidos.precio" } },
+              },
+            },
+            {
+              $sort: {
+                Total_que_gasto: -1,
+              },
+            },
+            {
+              $limit: 1,
+            },
+          ]).toArray();
+      
+        res.json({
+          result,
+        });
     } catch (error) {
         throw "eso no sirve";
     }
@@ -462,8 +501,25 @@ export const endpoint22 = async (req, res) => {
 
 export const endpoint23 = async (req, res) => {
     try {
-        //const endpoint = (await conection()).Compras
-    
+        const endpoint = (await conection()).Empleados
+        const result = await endpoint
+          .aggregate([
+            {
+              $lookup: {
+                from: "Ventas",
+                localField: "nombre",
+                foreignField: "empleado.nombre",
+                as: "ventas",
+              },
+            },
+            {
+              $match: { ventas: [] }
+            },
+          ]).toArray();
+
+        res.json({
+          result
+        });
     } catch (error) {
         throw "eso no sirve";
     }
