@@ -526,136 +526,520 @@ export const endpoint23 = async (req, res) => {
 }
 
 export const endpoint24 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Proveedores
+    const result = await endpoint.aggregate([
+        {
+          $lookup: {
+            from: "Compras",
+            localField: "nombre",
+            foreignField: "proveedor.nombre",
+            as: "proveedor",
+          },
+        },
+        {
+          $unwind: "$proveedor",
+        },
+        {
+          $unwind: "$proveedor.medicamentosComprados",
+        },
+        {
+          $match: {
+            "proveedor.fechaCompra": {
+              $gte: new Date("2023-01-01"),
+              $lt: new Date("2024-01-01"),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            nombre: { $first: "$nombre" },
+            direccion: { $first: "$direccion" },
+            totalCantidadComprada: {
+              $sum: "$proveedor.medicamentosComprados.cantidadComprada",
+            },
+          },
+        },
+        {
+          $sort: { totalCantidadComprada: -1 },
+        },
+        {
+          $limit: 1
+        }
+      ]).toArray();
+      
+    res.json({
+      result
+    });
+  } catch (error) {
+    throw "eso no sirve";
+  }
 }
 
 export const endpoint25 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint.aggregate([
+        {
+          $unwind: "$medicamentosVendidos",
+        },
+        {
+          $match: {
+            fechaVenta: {
+              $gte: new Date("2023-01-01"),
+              $lt: new Date("2024-01-01"),
+            },
+          },
+        },
+        {
+          $match: { "medicamentosVendidos.nombreMedicamento": "Paracetamol" }
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint26 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint
+      .aggregate([
+        {
+          $project: {
+            mesVenta: { $month: "$fechaVenta" },
+          },
+        },
+        {
+          $group: {
+            _id: "$mesVenta",
+            total_De_Ventas: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint27 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Empleados
+    const result = await endpoint.aggregate([
+        {
+          $lookup: {
+            from: "Ventas",
+            localField: "nombre",
+            foreignField: "empleado.nombre",
+            as: "ventas",
+          },
+        },
+        {
+          $project: {
+            nombre: 1,
+            cantidadVentas: { $size: "$ventas" },
+          },
+        },
+        {
+          $match: {
+            cantidadVentas: { $lt: 5 },
+          },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint28 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Medicamentos
+    const result = await endpoint.distinct("proveedor.nombre");
+
+    res.json({
+      Total_de_proveedores: result.length,
+      Nombre_de_los_proveedores: result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint29 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Medicamentos
+    const result = await endpoint.aggregate([
+        {
+          $match: {
+            stock: { $lt: 50 },
+          },
+        },
+        {
+          $group: {
+            _id: "$proveedor",
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            nombre_de_proveedor: "$_id",
+          },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint30 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
+  try {
+    const endpoint = (await conection()).Pacientes
+    const result = await endpoint.aggregate([
+        {
+          $lookup: {
+            from: "Ventas",
+            localField: "nombre",
+            foreignField: "paciente.nombre",
+            as: "ventas",
+          },
+        },
+        {
+          $match: {
+            ventas: { $size: 0 },
+          },
+        },
+      ]).toArray();
     
-    } catch (error) {
-        throw "eso no sirve";
-    }
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint31 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint.aggregate([
+        {
+          $project: {
+            mesVenta: { $month: "$fechaVenta" },
+          },
+        },
+        {
+          $group: {
+            _id: "$mesVenta",
+            total_de_ventas: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            mes: "$_id",
+            total_de_ventas: 1,
+          },
+        },
+        {
+          $sort: { mes: 1 },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint32 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint.aggregate([
+        {
+          $match: {
+            fechaVenta: {
+              $gte: new Date("2023-01-01T00:00:00.000Z"),
+              $lt: new Date("2024-01-01T00:00:00.000Z"),
+            },
+          },
+        },
+        {
+          $unwind: "$medicamentosVendidos",
+        },
+        {
+          $group: {
+            _id: {
+              empleado: "$empleado",
+              medicamento: "$medicamentosVendidos.nombreMedicamento",
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id.empleado",
+            total_de_medicamentos: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { total_de_medicamentos: -1 },
+        },
+        {
+          $limit: 1,
+        },
+        {
+          $project: {
+            _id: 0,
+            empleado: "$_id",
+            total_de_medicamentos: 1,
+          },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint33 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint.aggregate([
+        {
+          $project: {
+            mesVenta: { $month: "$fechaVenta" },
+          },
+        },
+        {
+          $group: {
+            _id: "$mesVenta",
+            total_de_Ventas: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint34 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Medicamentos
+    const result = await endpoint.aggregate([
+        {
+          $lookup: {
+            from: "Ventas",
+            localField: "nombre",
+            foreignField: "medicamentosVendidos.nombreMedicamento",
+            as: "ventas",
+          },
+        },
+        {
+          $match: {
+            ventas: { $eq: [] },
+            fechaVenta: {
+              $gte: new Date("2023-01-01T00:00:00.000Z"),
+              $lt: new Date("2023-04-01T00:00:00.000Z"),
+            }
+          }
+        }
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint35 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Compras
+    const result = await endpoint.aggregate([
+        {
+          $match: {
+            fechaCompra: {
+              $gte: new Date("2023-01-01T00:00:00.000Z"),
+              $lt: new Date("2024-01-01T00:00:00.000Z"),
+            },
+          },
+        },
+        {
+          $unwind: "$medicamentosComprados",
+        },
+        {
+          $group: {
+            _id: {
+              proveedor: "$proveedor.nombre",
+              producto: "$medicamentosComprados.nombreMedicamento",
+            }
+          }
+        },
+        {
+          $group: {
+            _id: "$_id",
+            totalProductos: { $sum: 1 },
+          },
+        },
+        {
+          $match: {
+            totalProductos: { $gte: 5 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            proveedor: "$_id",
+          }
+        }
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint36 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Ventas
+    const result = await endpoint.aggregate([
+        {
+          $match: {
+            fechaVenta: {
+              $gte: new Date("2023-01-01T00:00:00.000Z"),
+              $lt: new Date("2023-04-01T00:00:00.000Z"),
+            },
+          },
+        },
+        {
+          $unwind: "$medicamentosVendidos",
+        },
+        {
+          $group: {
+            _id: null,
+            totalMedicamentosTrimestre: {
+              $sum: "$medicamentosVendidos.cantidadVendida",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            totalMedicamentosTrimestre: 1,
+          },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint37 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Empleados
+    const result = await endpoint.aggregate([
+        {
+          $lookup: {
+            from: "Ventas",
+            localField: "nombre",
+            foreignField: "empleado.nombre",
+            as: "ventas",
+          },
+        },
+        {
+          $addFields: {
+            ventasEnAbril: {
+              $filter: {
+                input: "$ventas",
+                as: "venta",
+                cond: {
+                  $and: [
+                    {
+                      $gte: [
+                        "$$venta.fechaVenta",
+                        new Date("2023-04-01T00:00:00.000Z"),
+                      ],
+                    },
+                    {
+                      $lt: [
+                        "$$venta.fechaVenta",
+                        new Date("2023-05-01T00:00:00.000Z"),
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            ventasEnAbril: { $size: 0 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            nombre: 1,
+          },
+        },
+      ]).toArray();
+
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
 
 export const endpoint38 = async (req, res) => {
-    try {
-        //const endpoint = (await conection()).Compras
-    
-    } catch (error) {
-        throw "eso no sirve";
-    }
+  try {
+    const endpoint = (await conection()).Medicamentos
+    const result = await endpoint.find({ precio: { $gt: 50 }, stock: { $lt: 100 } }).toArray();
+    res.json({
+      result
+    });
+  } catch (error) {
+      throw "eso no sirve";
+  }
 }
